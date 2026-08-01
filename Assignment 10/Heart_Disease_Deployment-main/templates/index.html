@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prediction API</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Heart Disease Risk Assessment</h2>
+        <p>Enter the clinical parameters below to check for heart disease risk.</p>
+        
+        <form id="predictionForm">
+            <div class="form-grid">
+                <input type="number" id="age" placeholder="Age" required>
+                <input type="number" id="sex" placeholder="Sex (1=Male, 0=Female)" required>
+                <input type="number" id="cp" placeholder="Chest Pain Type (0-3)" required>
+                <input type="number" id="trestbps" placeholder="Resting Blood Pressure" required>
+                <input type="number" id="chol" placeholder="Serum Cholestoral (mg/dl)" required>
+                <input type="number" id="fbs" placeholder="Fasting Blood Sugar > 120 (1=True, 0=False)" required>
+                <input type="number" id="restecg" placeholder="Resting ECG (0-2)" required>
+                <input type="number" id="thalach" placeholder="Max Heart Rate Achieved" required>
+                <input type="number" id="exang" placeholder="Exercise Induced Angina (1=Yes, 0=No)" required>
+                <input type="number" step="0.1" id="oldpeak" placeholder="ST Depression (Oldpeak)" required>
+                <input type="number" id="slope" placeholder="Slope of Peak ST Segment (0-2)" required>
+                <input type="number" id="ca" placeholder="Number of Major Vessels (0-3)" required>
+                <input type="number" id="thal" placeholder="Thal (0-3)" required>
+            </div>
+            <button type="submit">Predict Result</button>
+        </form>
+
+        <div id="resultBox" class="result-box hidden">
+            <h3>Prediction Result:</h3>
+            <p id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Gather form data
+            const patientData = {
+                age: parseFloat(document.getElementById('age').value),
+                sex: parseFloat(document.getElementById('sex').value),
+                cp: parseFloat(document.getElementById('cp').value),
+                trestbps: parseFloat(document.getElementById('trestbps').value),
+                chol: parseFloat(document.getElementById('chol').value),
+                fbs: parseFloat(document.getElementById('fbs').value),
+                restecg: parseFloat(document.getElementById('restecg').value),
+                thalach: parseFloat(document.getElementById('thalach').value),
+                exang: parseFloat(document.getElementById('exang').value),
+                oldpeak: parseFloat(document.getElementById('oldpeak').value),
+                slope: parseFloat(document.getElementById('slope').value),
+                ca: parseFloat(document.getElementById('ca').value),
+                thal: parseFloat(document.getElementById('thal').value)
+            };
+
+            // Send POST request as JSON
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(patientData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Displaying JSON response
+                const resultBox = document.getElementById('resultBox');
+                const resultText = document.getElementById('resultText');
+                
+                resultBox.classList.remove('hidden');
+                
+                if (data.prediction) {
+                    resultText.innerText = data.prediction;
+                    resultText.style.color = data.prediction.includes("Detected") ? "#d9534f" : "#5cb85c";
+                } else if (data.error) {
+                    resultText.innerText = "Error: " + data.error;
+                    resultText.style.color = "red";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
